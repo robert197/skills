@@ -1,6 +1,6 @@
 ---
 name: dispatching-parallel-agents
-description: Use when facing 3+ independent failures that can be investigated without shared state or dependencies - dispatches multiple Claude agents to investigate and fix independent problems concurrently
+description: Use when facing 3+ independent failures that can be investigated without shared state or dependencies - investigates and fixes independent problems concurrently (note: in Codex, execute investigations sequentially or in parallel sessions rather than dispatching agents)
 ---
 
 # Dispatching Parallel Agents
@@ -9,7 +9,7 @@ description: Use when facing 3+ independent failures that can be investigated wi
 
 When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
 
-**Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
+**Core principle:** Handle one independent problem domain at a time, or work on them in separate sessions. In Codex, execute investigations directly rather than dispatching agents.
 
 ## When to Use
 
@@ -53,35 +53,34 @@ Group failures by what's broken:
 
 Each domain is independent - fixing tool approval doesn't affect abort tests.
 
-### 2. Create Focused Agent Tasks
+### 2. Create Focused Investigation Tasks
 
-Each agent gets:
+Each investigation gets:
 - **Specific scope:** One test file or subsystem
 - **Clear goal:** Make these tests pass
 - **Constraints:** Don't change other code
 - **Expected output:** Summary of what you found and fixed
 
-### 3. Dispatch in Parallel
+### 3. Execute Investigations
 
-```typescript
-// In Claude Code / AI environment
-Task("Fix agent-tool-abort.test.ts failures")
-Task("Fix batch-completion-behavior.test.ts failures")
-Task("Fix tool-approval-race-conditions.test.ts failures")
-// All three run concurrently
-```
+**In Codex:** Execute investigations sequentially or in separate sessions:
+- Fix agent-tool-abort.test.ts failures
+- Fix batch-completion-behavior.test.ts failures
+- Fix tool-approval-race-conditions.test.ts failures
+
+**Note:** In Codex, you can't dispatch parallel agents. Execute investigations one at a time or use separate sessions.
 
 ### 4. Review and Integrate
 
-When agents return:
+When investigations complete:
 - Read each summary
 - Verify fixes don't conflict
 - Run full test suite
 - Integrate all changes
 
-## Agent Prompt Structure
+## Investigation Task Structure
 
-Good agent prompts are:
+Good investigation tasks are:
 1. **Focused** - One clear problem domain
 2. **Self-contained** - All context needed to understand the problem
 3. **Specific about output** - What should the agent return?
@@ -109,24 +108,24 @@ Return: Summary of what you found and what you fixed.
 
 ## Common Mistakes
 
-**❌ Too broad:** "Fix all the tests" - agent gets lost
+**❌ Too broad:** "Fix all the tests" - investigation gets lost
 **✅ Specific:** "Fix agent-tool-abort.test.ts" - focused scope
 
-**❌ No context:** "Fix the race condition" - agent doesn't know where
+**❌ No context:** "Fix the race condition" - investigation doesn't know where
 **✅ Context:** Paste the error messages and test names
 
-**❌ No constraints:** Agent might refactor everything
+**❌ No constraints:** Investigation might refactor everything
 **✅ Constraints:** "Do NOT change production code" or "Fix tests only"
 
 **❌ Vague output:** "Fix it" - you don't know what changed
-**✅ Specific:** "Return summary of root cause and changes"
+**✅ Specific:** "Document summary of root cause and changes"
 
 ## When NOT to Use
 
 **Related failures:** Fixing one might fix others - investigate together first
 **Need full context:** Understanding requires seeing entire system
 **Exploratory debugging:** You don't know what's broken yet
-**Shared state:** Agents would interfere (editing same files, using same resources)
+**Shared state:** Investigations would interfere (editing same files, using same resources)
 
 ## Real Example from Session
 
@@ -139,17 +138,17 @@ Return: Summary of what you found and what you fixed.
 
 **Decision:** Independent domains - abort logic separate from batch completion separate from race conditions
 
-**Dispatch:**
+**Execution:**
 ```
-Agent 1 → Fix agent-tool-abort.test.ts
-Agent 2 → Fix batch-completion-behavior.test.ts
-Agent 3 → Fix tool-approval-race-conditions.test.ts
+Investigation 1 → Fix agent-tool-abort.test.ts
+Investigation 2 → Fix batch-completion-behavior.test.ts
+Investigation 3 → Fix tool-approval-race-conditions.test.ts
 ```
 
 **Results:**
-- Agent 1: Replaced timeouts with event-based waiting
-- Agent 2: Fixed event structure bug (threadId in wrong place)
-- Agent 3: Added wait for async tool execution to complete
+- Investigation 1: Replaced timeouts with event-based waiting
+- Investigation 2: Fixed event structure bug (threadId in wrong place)
+- Investigation 3: Added wait for async tool execution to complete
 
 **Integration:** All fixes independent, no conflicts, full suite green
 
@@ -157,24 +156,24 @@ Agent 3 → Fix tool-approval-race-conditions.test.ts
 
 ## Key Benefits
 
-1. **Parallelization** - Multiple investigations happen simultaneously
-2. **Focus** - Each agent has narrow scope, less context to track
-3. **Independence** - Agents don't interfere with each other
-4. **Speed** - 3 problems solved in time of 1
+1. **Organization** - Multiple independent investigations organized clearly
+2. **Focus** - Each investigation has narrow scope, less context to track
+3. **Independence** - Investigations don't interfere with each other
+4. **Efficiency** - Problems solved systematically
 
 ## Verification
 
-After agents return:
+After investigations complete:
 1. **Review each summary** - Understand what changed
-2. **Check for conflicts** - Did agents edit same code?
+2. **Check for conflicts** - Did investigations edit same code?
 3. **Run full suite** - Verify all fixes work together
-4. **Spot check** - Agents can make systematic errors
+4. **Spot check** - Investigations can have systematic errors
 
 ## Real-World Impact
 
 From debugging session (2025-10-03):
 - 6 failures across 3 files
-- 3 agents dispatched in parallel
-- All investigations completed concurrently
+- 3 investigations executed (sequentially in Codex)
+- All investigations completed
 - All fixes integrated successfully
-- Zero conflicts between agent changes
+- Zero conflicts between changes

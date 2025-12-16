@@ -17,11 +17,11 @@ This skill provides a structured workflow for guiding users through collaborativ
 **Initial offer:**
 Offer the user a structured workflow for co-authoring the document. Explain the three stages:
 
-1. **Context Gathering**: User provides all relevant context while Claude asks clarifying questions
+1. **Context Gathering**: User provides all relevant context while Codex asks clarifying questions
 2. **Refinement & Structure**: Iteratively build each section through brainstorming and editing
-3. **Reader Testing**: Test the doc with a fresh Claude (no context) to catch blind spots before others read it
+3. **Reader Testing**: Test the doc with a fresh Codex instance (no context) to catch blind spots before others read it
 
-Explain that this approach helps ensure the doc works well when others read it (including when they paste it into Claude). Ask if they want to try this workflow or prefer to work freeform.
+Explain that this approach helps ensure the doc works well when others read it (including when they paste it into Codex). Ask if they want to try this workflow or prefer to work freeform.
 
 If user declines, work freeform. If user accepts, proceed to Stage 1.
 

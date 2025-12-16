@@ -1,19 +1,21 @@
 ---
 name: subagent-driven-development
-description: Use when executing implementation plans with independent tasks in the current session - dispatches fresh subagent for each task with code review between tasks, enabling fast iteration with quality gates
+description: Use when executing implementation plans with independent tasks in the current session - executes tasks sequentially with code review between tasks, enabling fast iteration with quality gates (adapted for Codex: subagents not available, execute tasks directly)
 ---
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh subagent per task, with code review after each.
+Execute plan by completing tasks sequentially with code review after each.
 
-**Core principle:** Fresh subagent per task + review between tasks = high quality, fast iteration
+**Note for Codex:** Subagents aren't available in Codex. This skill is adapted to execute tasks directly in the current session with review checkpoints.
+
+**Core principle:** Sequential task execution + review between tasks = high quality, fast iteration
 
 ## Overview
 
 **vs. Executing Plans (parallel session):**
 - Same session (no context switch)
-- Fresh subagent per task (no context pollution)
+- Sequential task execution (clear separation between tasks)
 - Code review after each task (catch issues early)
 - Faster iteration (no human-in-loop between tasks)
 
@@ -31,48 +33,31 @@ Execute plan by dispatching fresh subagent per task, with code review after each
 
 ### 1. Load Plan
 
-Read plan file, create TodoWrite with all tasks.
+Read plan file, create update_plan with all tasks.
 
-### 2. Execute Task with Subagent
+### 2. Execute Task
 
 For each task:
 
-**Dispatch fresh subagent:**
-```
-Task tool (general-purpose):
-  description: "Implement Task N: [task name]"
-  prompt: |
-    You are implementing Task N from [plan-file].
+**Execute the task directly:**
+1. Read the task from the plan file carefully
+2. Implement exactly what the task specifies
+3. Write tests (following TDD if task says to)
+4. Verify implementation works
+5. Commit your work
+6. Document what you implemented, what you tested, test results, files changed, any issues
 
-    Read that task carefully. Your job is to:
-    1. Implement exactly what the task specifies
-    2. Write tests (following TDD if task says to)
-    3. Verify implementation works
-    4. Commit your work
-    5. Report back
+**Note:** In Codex, execute tasks directly rather than dispatching subagents.
 
-    Work from: [directory]
+### 3. Review Task Work
 
-    Report: What you implemented, what you tested, test results, files changed, any issues
-```
+**Perform code review:**
+- Use the requesting-code-review skill to review your work
+- Review against: Task N from [plan-file]
+- Check BASE_SHA (commit before task) vs HEAD_SHA (current commit)
+- Document: Strengths, Issues (Critical/Important/Minor), Assessment
 
-**Subagent reports back** with summary of work.
-
-### 3. Review Subagent's Work
-
-**Dispatch code-reviewer subagent:**
-```
-Task tool (superpowers:code-reviewer):
-  Use template at requesting-code-review/code-reviewer.md
-
-  WHAT_WAS_IMPLEMENTED: [from subagent's report]
-  PLAN_OR_REQUIREMENTS: Task N from [plan-file]
-  BASE_SHA: [commit before task]
-  HEAD_SHA: [current commit]
-  DESCRIPTION: [task summary]
-```
-
-**Code reviewer returns:** Strengths, Issues (Critical/Important/Minor), Assessment
+**Note:** In Codex, perform the review yourself using the code review skill rather than dispatching a subagent.
 
 ### 4. Apply Review Feedback
 
@@ -81,23 +66,23 @@ Task tool (superpowers:code-reviewer):
 - Fix Important issues before next task
 - Note Minor issues
 
-**Dispatch follow-up subagent if needed:**
-```
-"Fix issues from code review: [list issues]"
-```
+**Fix issues if needed:**
+- Fix Critical issues immediately
+- Fix Important issues before next task
+- Note Minor issues for later
 
 ### 5. Mark Complete, Next Task
 
-- Mark task as completed in TodoWrite
+- Mark task as completed in update_plan
 - Move to next task
 - Repeat steps 2-5
 
 ### 6. Final Review
 
-After all tasks complete, dispatch final code-reviewer:
-- Reviews entire implementation
-- Checks all plan requirements met
-- Validates overall architecture
+After all tasks complete, perform final code review:
+- Review entire implementation
+- Check all plan requirements met
+- Validate overall architecture
 
 ### 7. Complete Development
 
@@ -111,36 +96,36 @@ After final review passes:
 ```
 You: I'm using Subagent-Driven Development to execute this plan.
 
-[Load plan, create TodoWrite]
+[Load plan, create update_plan]
 
 Task 1: Hook installation script
 
-[Dispatch implementation subagent]
-Subagent: Implemented install-hook with tests, 5/5 passing
+[Execute task directly]
+Implemented install-hook with tests, 5/5 passing
 
-[Get git SHAs, dispatch code-reviewer]
-Reviewer: Strengths: Good test coverage. Issues: None. Ready.
+[Get git SHAs, perform code review]
+Review: Strengths: Good test coverage. Issues: None. Ready.
 
 [Mark Task 1 complete]
 
 Task 2: Recovery modes
 
-[Dispatch implementation subagent]
-Subagent: Added verify/repair, 8/8 tests passing
+[Execute task directly]
+Added verify/repair, 8/8 tests passing
 
-[Dispatch code-reviewer]
-Reviewer: Strengths: Solid. Issues (Important): Missing progress reporting
+[Perform code review]
+Review: Strengths: Solid. Issues (Important): Missing progress reporting
 
-[Dispatch fix subagent]
-Fix subagent: Added progress every 100 conversations
+[Fix issues directly]
+Added progress every 100 conversations
 
 [Verify fix, mark Task 2 complete]
 
 ...
 
 [After all tasks]
-[Dispatch final code-reviewer]
-Final reviewer: All requirements met, ready to merge
+[Perform final code review]
+Final review: All requirements met, ready to merge
 
 Done!
 ```
@@ -148,9 +133,9 @@ Done!
 ## Advantages
 
 **vs. Manual execution:**
-- Subagents follow TDD naturally
-- Fresh context per task (no confusion)
-- Parallel-safe (subagents don't interfere)
+- Sequential execution with clear task boundaries
+- Each task completed fully before moving to next
+- Review checkpoints prevent issues from accumulating
 
 **vs. Executing Plans:**
 - Same session (no handoff)
@@ -158,7 +143,7 @@ Done!
 - Review checkpoints automatic
 
 **Cost:**
-- More subagent invocations
+- More review checkpoints
 - But catches issues early (cheaper than debugging later)
 
 ## Red Flags
@@ -166,12 +151,12 @@ Done!
 **Never:**
 - Skip code review between tasks
 - Proceed with unfixed Critical issues
-- Dispatch multiple implementation subagents in parallel (conflicts)
+- Start next task before current task is fully complete and reviewed
 - Implement without reading plan task
 
-**If subagent fails task:**
-- Dispatch fix subagent with specific instructions
-- Don't try to fix manually (context pollution)
+**If task has issues:**
+- Fix issues immediately before moving to next task
+- Don't accumulate technical debt
 
 ## Integration
 
@@ -180,8 +165,8 @@ Done!
 - **requesting-code-review** - REQUIRED: Review after each task (see Step 3)
 - **finishing-a-development-branch** - REQUIRED: Complete development after all tasks (see Step 7)
 
-**Subagents must use:**
-- **test-driven-development** - Subagents follow TDD for each task
+**Each task execution must follow:**
+- **test-driven-development** - Follow TDD for each task
 
 **Alternative workflow:**
 - **executing-plans** - Use for parallel session instead of same-session execution
