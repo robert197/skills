@@ -196,7 +196,7 @@ The `description` field enables Skill discovery and should include both what the
 
 **Be specific and include key terms**. Include both what the Skill does and specific triggers/contexts for when to use it.
 
-Each Skill has exactly one description field. The description is critical for skill selection: Claude uses it to choose the right Skill from potentially 100+ available Skills. Your description must provide enough detail for Claude to know when to select this Skill, while the rest of SKILL.md provides the implementation details.
+Each Skill has exactly one description field. The description is critical for skill selection: Claude uses it to choose the right Skill from potentially 100+ available Skills. Your description must provide enough detail for codex to know when to select this Skill, while the rest of SKILL.md provides the implementation details.
 
 Effective examples:
 
