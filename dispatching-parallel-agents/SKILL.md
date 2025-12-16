@@ -1,6 +1,6 @@
 ---
 name: dispatching-parallel-agents
-description: Use when facing 3+ independent failures that can be investigated without shared state or dependencies - investigates and fixes independent problems concurrently (note: in Codex, execute investigations sequentially or in parallel sessions rather than dispatching agents)
+description: "Use when facing 3+ independent failures that can be investigated without shared state or dependencies - investigates and fixes independent problems concurrently (note: in Codex, execute investigations sequentially or in parallel sessions rather than dispatching agents)"
 ---
 
 # Dispatching Parallel Agents

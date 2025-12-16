@@ -1,6 +1,6 @@
 ---
 name: subagent-driven-development
-description: Use when executing implementation plans with independent tasks in the current session - executes tasks sequentially with code review between tasks, enabling fast iteration with quality gates (adapted for Codex: subagents not available, execute tasks directly)
+description: "Use when executing implementation plans with independent tasks in the current session - executes tasks sequentially with code review between tasks, enabling fast iteration with quality gates (adapted for Codex: subagents not available, execute tasks directly)"
 ---
 
 # Subagent-Driven Development
